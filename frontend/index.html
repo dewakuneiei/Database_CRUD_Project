@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Frontend Example</title>
+</head>
+<body>
+  <h1>User Management</h1>
+
+  <!-- Create User Form -->
+  <h2>Create User</h2>
+  <form id="createUserForm">
+    <input type="text" placeholder="Name" id="createName">
+    <input type="text" placeholder="Username" id="createUsername">
+    <input type="password" placeholder="Password" id="createPassword">
+    <input type="email" placeholder="Email" id="createEmail">
+    <input type="number" placeholder="Hours" id="createHours">
+    <button type="submit">Create</button>
+  </form>
+
+  <!-- Display Users -->
+  <h2>Users</h2>
+  <ul id="userList"></ul>
+
+  <script>
+    // Function to fetch and display user data
+    function fetchUsers() {
+      fetch('http://localhost:3000/read')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          const userList = document.getElementById('userList');
+          userList.innerHTML = '';
+
+          if (data.length === 0) {
+            userList.textContent = 'No users found.';
+            return;
+          }
+
+          data.forEach(user => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `ID: ${user.user_id}, Name: ${user.name_profile}, Username: ${user.username}, Email: ${user.email}, Hours: ${user.amount_hours}`;
+            userList.appendChild(listItem);
+          });
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+        });
+    }
+
+    // Event listener for the create user form
+    document.getElementById('createUserForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const createName = document.getElementById('createName').value;
+      const createUsername = document.getElementById('createUsername').value;
+      const createPassword = document.getElementById('createPassword').value;
+      const createEmail = document.getElementById('createEmail').value;
+      const createHours = document.getElementById('createHours').value;
+
+      const userData = {
+        pname: createName,
+        username: createUsername,
+        password: createPassword,
+        email: createEmail,
+        hours: createHours,
+      };
+
+      fetch('http://localhost:3000/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log(data.message);
+          fetchUsers(); // Refresh the user list after creating a user
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+        });
+    });
+
+    // Fetch and display users when the page loads
+    fetchUsers();
+  </script>
+</body>
+</html>
